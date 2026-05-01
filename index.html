@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OpenTelemetry Maturity — coming soon</title>
+<meta name="description" content="A public, dimension-by-dimension assessment of how cloud-native projects emit telemetry. Built on the draft OTel Support Maturity Model.">
+<meta property="og:title" content="OpenTelemetry Maturity, evaluated.">
+<meta property="og:description" content="A public, dimension-by-dimension assessment of how cloud-native projects emit telemetry.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://otel-maturity.io/">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  :root {
+    --bg-50: #070810;
+    --bg-100: #151721;
+    --bg-150: #1d2029;
+    --border: #2c3139;
+    --border-strong: #40454e;
+    --text-intense: #f9fafb;
+    --text-default: #9ca2ab;
+    --text-subtle: #6d737d;
+    --indigo: #6366f1;
+    --violet: #a78bfa;
+    --green: #62d08d;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+    background: var(--bg-50);
+    color: var(--text-intense);
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+  }
+  .bg {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background:
+      radial-gradient(ellipse 50% 60% at 75% 50%, rgba(167,139,250,.10), transparent 60%),
+      radial-gradient(ellipse 40% 50% at 20% 100%, rgba(99,102,241,.06), transparent 60%),
+      var(--bg-50);
+  }
+  .grid-overlay {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image:
+      linear-gradient(to right, rgba(255,255,255,.02) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255,255,255,.02) 1px, transparent 1px);
+    background-size: 64px 64px;
+    mask-image: radial-gradient(ellipse 90% 80% at 50% 50%, black, transparent 90%);
+  }
+
+  .page {
+    position: relative; z-index: 1;
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    padding: 32px clamp(24px, 5vw, 64px);
+  }
+
+  .topbar { display: flex; align-items: center; justify-content: space-between; }
+  .mark { display: inline-flex; align-items: center; gap: 10px; font-size: 14px; color: var(--text-intense); font-weight: 500; }
+  .mark-icon {
+    width: 26px; height: 26px; border-radius: 6px;
+    background: linear-gradient(135deg, var(--indigo), var(--violet));
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700; color: white;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .topbar-meta { font-size: 12px; color: var(--text-subtle); font-family: 'JetBrains Mono', monospace; }
+
+  .hero {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1.05fr 1fr;
+    align-items: center;
+    gap: clamp(32px, 6vw, 80px);
+    padding: clamp(32px, 6vw, 64px) 0;
+    max-width: 1280px;
+    width: 100%;
+    margin: 0 auto;
+  }
+
+  .copy { max-width: 540px; }
+  .pill {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 11px; color: var(--text-default);
+    padding: 6px 12px; border: 1px solid var(--border); border-radius: 999px;
+    margin-bottom: 28px;
+    text-transform: uppercase; letter-spacing: .1em; font-weight: 500;
+    background: rgba(29,32,41,.5); backdrop-filter: blur(8px);
+  }
+  .pulse { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: pulse 2.2s ease-in-out infinite; }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(98,208,141,.5); }
+    50% { opacity: .7; box-shadow: 0 0 0 6px rgba(98,208,141,0); }
+  }
+  .title {
+    font-size: clamp(40px, 6vw, 64px);
+    font-weight: 600; letter-spacing: -.025em; line-height: 1.05;
+    color: var(--text-intense); margin: 0 0 24px;
+  }
+  .title .accent {
+    background: linear-gradient(135deg, var(--indigo), var(--violet));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .sub {
+    font-size: clamp(15px, 1.4vw, 17px);
+    color: var(--text-default); line-height: 1.6;
+    margin: 0 0 36px;
+    max-width: 480px;
+  }
+  .foot { font-size: 12px; color: var(--text-subtle); display: flex; gap: 12px; align-items: center; }
+  .foot a { color: var(--text-default); text-decoration: none; transition: color .15s ease; }
+  .foot a:hover { color: var(--text-intense); }
+  .sep { color: var(--border-strong); }
+
+  .visual {
+    position: relative;
+    width: 100%;
+    max-width: 520px;
+    justify-self: end;
+    aspect-ratio: 1 / 1;
+  }
+  .visual::before {
+    content: ""; position: absolute; inset: -8%;
+    background: radial-gradient(ellipse 55% 55% at 50% 50%, rgba(167,139,250,.20), transparent 70%);
+    z-index: -1; filter: blur(40px); pointer-events: none;
+  }
+  .visual canvas { width: 100% !important; height: 100% !important; }
+
+  .footer-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 11px; color: var(--text-subtle); font-family: 'JetBrains Mono', monospace;
+    padding-top: 24px; border-top: 1px solid var(--border);
+  }
+  .corner-flow { display: inline-flex; gap: 6px; align-items: center; opacity: .85; }
+  .corner-flow .node { width: 6px; height: 6px; border-radius: 50%; }
+  .corner-flow .line { width: 14px; height: 1px; background: var(--border-strong); }
+
+  @media (max-width: 800px) {
+    .hero { grid-template-columns: 1fr; padding-top: 24px; }
+    .visual { justify-self: center; max-width: 380px; margin-top: 16px; }
+    .copy { max-width: 100%; }
+    .footer-bar { flex-direction: column; gap: 12px; align-items: flex-start; }
+  }
+</style>
+</head>
+<body>
+<div class="bg"></div>
+<div class="grid-overlay"></div>
+
+<div class="page">
+  <header class="topbar">
+    <span class="mark">
+      <span class="mark-icon">M</span>
+      <span>otel-maturity.io</span>
+    </span>
+    <span class="topbar-meta">v0 · pre-launch</span>
+  </header>
+
+  <main class="hero">
+    <div class="copy">
+      <div class="pill">
+        <span class="pulse"></span>
+        <span>Coming soon</span>
+      </div>
+      <h1 class="title">OpenTelemetry Maturity, <span class="accent">evaluated.</span></h1>
+      <p class="sub">A public, dimension-by-dimension assessment of how cloud-native projects emit telemetry.</p>
+      <div class="foot">
+        <span>Built on the <a href="https://github.com/open-telemetry/community/issues/3247" target="_blank" rel="noopener">draft OTel Support Maturity Model</a></span>
+      </div>
+    </div>
+
+    <div class="visual">
+      <canvas id="radar"></canvas>
+    </div>
+  </main>
+
+  <footer class="footer-bar">
+    <span class="corner-flow">
+      <span class="node" style="background: var(--green)"></span>
+      <span class="line"></span>
+      <span class="node" style="background: var(--violet)"></span>
+      <span class="line"></span>
+      <span class="node" style="background: var(--indigo)"></span>
+      <span style="margin-left: 4px">otlp → batch → exporters</span>
+    </span>
+    <span>© 2026</span>
+  </footer>
+</div>
+
+<script>
+  const ctx = document.getElementById('radar').getContext('2d');
+  new Chart(ctx, {
+    type: 'radar',
+    data: {
+      labels: ['Integration', 'Semantic\nConventions', 'Resource\nAttributes', 'Trace\nModeling', 'Multi-Signal', 'Signal\nQuality', 'Stability'],
+      datasets: [{
+        data: [1, 2, 2, 2, 1, 1, 1],
+        backgroundColor: 'rgba(167, 139, 250, 0.16)',
+        borderColor: '#a78bfa',
+        borderWidth: 2,
+        pointBackgroundColor: '#a78bfa',
+        pointBorderColor: '#a78bfa',
+        pointRadius: 3.5,
+        pointHoverRadius: 5
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: { duration: 1600, easing: 'easeOutQuart' },
+      plugins: { legend: { display: false }, tooltip: { enabled: false } },
+      scales: {
+        r: {
+          min: 0, max: 4,
+          ticks: { display: false, stepSize: 1 },
+          grid: { color: 'rgba(255,255,255,0.07)' },
+          angleLines: { color: 'rgba(255,255,255,0.07)' },
+          pointLabels: {
+            font: { family: 'Inter', size: 12, weight: '500' },
+            color: '#d0d4d9'
+          }
+        }
+      }
+    }
+  });
+</script>
+</body>
+</html>

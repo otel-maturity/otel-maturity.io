@@ -1,0 +1,8 @@
+# Brainstorm artifacts (visual companion mockups)
+.superpowers/
+
+# Editor / OS
+.DS_Store
+.idea/
+.vscode/
+*.swp
