@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>OpenTelemetry support in cloud native — a love letter to the ecosystem</title>
-<meta name="description" content="A public, dimension-by-dimension look at how cloud native projects support OpenTelemetry. Built on the draft OTel Support Maturity Model.">
-<meta property="og:title" content="OpenTelemetry support in cloud native, elevated.">
-<meta property="og:description" content="A love letter to the cloud native ecosystem. A public, dimension-by-dimension look at how cloud native projects support OpenTelemetry.">
+<title>OpenTelemetry support, elevated</title>
+<meta name="description" content="Observability that everybody loves. A public, dimension-by-dimension look at how cloud native projects support OpenTelemetry.">
+<meta property="og:title" content="OpenTelemetry support, elevated.">
+<meta property="og:description" content="Observability that everybody loves. With a stronger community we make it easier for everyone.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://otel-maturity.io/">
 <meta name="twitter:card" content="summary_large_image">
@@ -15,14 +15,12 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script>
   (function() {
+    var theme = 'dark';
     try {
       var stored = localStorage.getItem('theme');
-      var prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
-      var theme = stored || (prefersLight ? 'light' : 'dark');
-      document.documentElement.setAttribute('data-theme', theme);
-    } catch (e) {
-      document.documentElement.setAttribute('data-theme', 'dark');
-    }
+      if (stored === 'light' || stored === 'dark') theme = stored;
+    } catch (e) {}
+    document.documentElement.setAttribute('data-theme', theme);
   })();
 </script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -161,14 +159,21 @@
     50% { opacity: .7; box-shadow: 0 0 0 6px rgba(98,208,141,0); }
   }
   .eyebrow {
+    margin: 0 0 20px;
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .eyebrow p {
     display: flex; align-items: center; gap: 8px;
     font-size: 13px; color: var(--text-default);
-    margin: 0 0 16px;
+    margin: 0;
     font-weight: 500;
   }
-  .eyebrow .heart {
+  .eyebrow .icon {
     display: inline-block;
     transform: translateY(-1px);
+    font-size: 14px;
+  }
+  .eyebrow .icon.heart {
     animation: heart 2.6s ease-in-out infinite;
   }
   @keyframes heart {
@@ -260,8 +265,11 @@
         <span class="pulse"></span>
         <span>Coming soon</span>
       </div>
-      <p class="eyebrow"><span class="heart" aria-hidden="true">❤️</span><span>A love letter to the cloud native ecosystem</span></p>
-      <h1 class="title">OpenTelemetry support in cloud native, <span class="accent">elevated.</span></h1>
+      <div class="eyebrow">
+        <p><span class="icon heart" aria-hidden="true">❤️</span><span>Observability that everybody loves</span></p>
+        <p><span class="icon" aria-hidden="true">💪</span><span>With a stronger community we make it easier for everyone</span></p>
+      </div>
+      <h1 class="title">OpenTelemetry support, <span class="accent">elevated.</span></h1>
       <p class="sub">A public, dimension-by-dimension look at how cloud native projects support OpenTelemetry.</p>
       <div class="foot">
         <span>Built on the <a href="https://github.com/open-telemetry/community/issues/3247" target="_blank" rel="noopener">draft OTel Support Maturity Model</a></span>
@@ -351,11 +359,6 @@
     buildRadar(false);
   });
 
-  window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', (e) => {
-    if (localStorage.getItem('theme')) return;
-    document.documentElement.setAttribute('data-theme', e.matches ? 'light' : 'dark');
-    buildRadar(false);
-  });
 </script>
 </body>
 </html>
