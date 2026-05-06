@@ -3,30 +3,82 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>OpenTelemetry Maturity — coming soon</title>
-<meta name="description" content="A public, dimension-by-dimension assessment of how cloud-native projects emit telemetry. Built on the draft OTel Support Maturity Model.">
-<meta property="og:title" content="OpenTelemetry Maturity, evaluated.">
-<meta property="og:description" content="A public, dimension-by-dimension assessment of how cloud-native projects emit telemetry.">
+<title>OpenTelemetry support in cloud native — a love letter to the ecosystem</title>
+<meta name="description" content="A public, dimension-by-dimension look at how cloud native projects support OpenTelemetry. Built on the draft OTel Support Maturity Model.">
+<meta property="og:title" content="OpenTelemetry support in cloud native, elevated.">
+<meta property="og:description" content="A love letter to the cloud native ecosystem. A public, dimension-by-dimension look at how cloud native projects support OpenTelemetry.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://otel-maturity.io/">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script>
+  (function() {
+    try {
+      var stored = localStorage.getItem('theme');
+      var prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
+      var theme = stored || (prefersLight ? 'light' : 'dark');
+      document.documentElement.setAttribute('data-theme', theme);
+    } catch (e) {
+      document.documentElement.setAttribute('data-theme', 'dark');
+    }
+  })();
+</script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
-  :root {
-    --bg-50: #070810;
-    --bg-100: #151721;
-    --bg-150: #1d2029;
-    --border: #2c3139;
-    --border-strong: #40454e;
-    --text-intense: #f9fafb;
-    --text-default: #9ca2ab;
-    --text-subtle: #6d737d;
-    --indigo: #6366f1;
-    --violet: #a78bfa;
+  :root,
+  :root[data-theme="dark"] {
+    --bg-50: #060912;
+    --bg-100: #101622;
+    --bg-150: #19202d;
+    --border: #232c3a;
+    --border-strong: #38445a;
+    --text-intense: #f5f9ff;
+    --text-default: #9aa6b8;
+    --text-subtle: #67738a;
+    --electric: #0ea5e9;
+    --electric-bright: #38bdf8;
+    --electric-glow: #67e8f9;
     --green: #62d08d;
+    --surface-glass: rgba(29,32,41,.5);
+    --grid-line: rgba(255,255,255,.02);
+    --bg-glow-1: rgba(56,189,248,.14);
+    --bg-glow-2: rgba(14,165,233,.08);
+    --visual-glow: rgba(56,189,248,.24);
+    --chart-grid: rgba(255,255,255,.07);
+    --chart-label: #d0d4d9;
+    --chart-fill: rgba(56, 189, 248, 0.18);
+    --chart-line: #38bdf8;
+    --chart-point-bg: #67e8f9;
+    --chart-point-border: #38bdf8;
+    --underline-soft: rgba(56,189,248,.4);
+  }
+  :root[data-theme="light"] {
+    --bg-50: #f8fafc;
+    --bg-100: #ffffff;
+    --bg-150: #f1f5f9;
+    --border: #e1e6ed;
+    --border-strong: #adb6c2;
+    --text-intense: #0c1322;
+    --text-default: #4a5568;
+    --text-subtle: #6b7589;
+    --electric: #0284c7;
+    --electric-bright: #0ea5e9;
+    --electric-glow: #0891b2;
+    --green: #16a34a;
+    --surface-glass: rgba(255,255,255,.7);
+    --grid-line: rgba(15,23,42,.04);
+    --bg-glow-1: rgba(56,189,248,.18);
+    --bg-glow-2: rgba(2,132,199,.08);
+    --visual-glow: rgba(14,165,233,.18);
+    --chart-grid: rgba(15,23,42,.08);
+    --chart-label: #475569;
+    --chart-fill: rgba(14,165,233,.16);
+    --chart-line: #0284c7;
+    --chart-point-bg: #06b6d4;
+    --chart-point-border: #0284c7;
+    --underline-soft: rgba(2,132,199,.35);
   }
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; }
@@ -37,19 +89,20 @@
     min-height: 100vh;
     overflow-x: hidden;
     position: relative;
+    transition: background-color .25s ease, color .25s ease;
   }
   .bg {
     position: fixed; inset: 0; z-index: 0; pointer-events: none;
     background:
-      radial-gradient(ellipse 50% 60% at 75% 50%, rgba(167,139,250,.10), transparent 60%),
-      radial-gradient(ellipse 40% 50% at 20% 100%, rgba(99,102,241,.06), transparent 60%),
+      radial-gradient(ellipse 50% 60% at 75% 50%, var(--bg-glow-1), transparent 60%),
+      radial-gradient(ellipse 40% 50% at 20% 100%, var(--bg-glow-2), transparent 60%),
       var(--bg-50);
   }
   .grid-overlay {
     position: fixed; inset: 0; z-index: 0; pointer-events: none;
     background-image:
-      linear-gradient(to right, rgba(255,255,255,.02) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(255,255,255,.02) 1px, transparent 1px);
+      linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
     background-size: 64px 64px;
     mask-image: radial-gradient(ellipse 90% 80% at 50% 50%, black, transparent 90%);
   }
@@ -61,8 +114,25 @@
     padding: 32px clamp(24px, 5vw, 64px);
   }
 
-  .topbar { display: flex; justify-content: flex-end; }
+  .topbar { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
   .topbar-meta { font-size: 12px; color: var(--text-subtle); font-family: 'JetBrains Mono', monospace; }
+  .theme-toggle {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px;
+    background: var(--surface-glass);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text-default);
+    cursor: pointer;
+    backdrop-filter: blur(8px);
+    transition: color .15s ease, border-color .15s ease, background-color .15s ease;
+    margin-left: auto;
+  }
+  .theme-toggle:hover { color: var(--text-intense); border-color: var(--border-strong); }
+  .theme-toggle svg { width: 16px; height: 16px; display: block; }
+  .theme-toggle .icon-moon { display: none; }
+  :root[data-theme="light"] .theme-toggle .icon-moon { display: block; }
+  :root[data-theme="light"] .theme-toggle .icon-sun { display: none; }
 
   .hero {
     flex: 1;
@@ -83,12 +153,30 @@
     padding: 6px 12px; border: 1px solid var(--border); border-radius: 999px;
     margin-bottom: 28px;
     text-transform: uppercase; letter-spacing: .1em; font-weight: 500;
-    background: rgba(29,32,41,.5); backdrop-filter: blur(8px);
+    background: var(--surface-glass); backdrop-filter: blur(8px);
   }
   .pulse { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: pulse 2.2s ease-in-out infinite; }
   @keyframes pulse {
     0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(98,208,141,.5); }
     50% { opacity: .7; box-shadow: 0 0 0 6px rgba(98,208,141,0); }
+  }
+  .eyebrow {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; color: var(--text-default);
+    margin: 0 0 16px;
+    font-weight: 500;
+  }
+  .eyebrow .heart {
+    display: inline-block;
+    transform: translateY(-1px);
+    animation: heart 2.6s ease-in-out infinite;
+  }
+  @keyframes heart {
+    0%, 100% { transform: translateY(-1px) scale(1); }
+    15% { transform: translateY(-1px) scale(1.12); }
+    30% { transform: translateY(-1px) scale(1); }
+    45% { transform: translateY(-1px) scale(1.08); }
+    60% { transform: translateY(-1px) scale(1); }
   }
   .title {
     font-size: clamp(40px, 6vw, 64px);
@@ -96,16 +184,16 @@
     color: var(--text-intense); margin: 0 0 24px;
   }
   .title .accent {
-    background: linear-gradient(135deg, var(--indigo), var(--violet));
+    background: linear-gradient(135deg, var(--electric), var(--electric-glow));
     -webkit-background-clip: text; background-clip: text; color: transparent;
   }
   .sub {
     font-size: clamp(15px, 1.4vw, 17px);
     color: var(--text-default); line-height: 1.6;
-    margin: 0 0 36px;
-    max-width: 480px;
+    margin: 0 0 28px;
+    max-width: 520px;
   }
-  .foot { font-size: 12px; color: var(--text-subtle); display: flex; gap: 12px; align-items: center; }
+  .foot { font-size: 12px; color: var(--text-subtle); display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
   .foot a { color: var(--text-default); text-decoration: none; transition: color .15s ease; }
   .foot a:hover { color: var(--text-intense); }
   .sep { color: var(--border-strong); }
@@ -119,7 +207,7 @@
   }
   .visual::before {
     content: ""; position: absolute; inset: -8%;
-    background: radial-gradient(ellipse 55% 55% at 50% 50%, rgba(167,139,250,.20), transparent 70%);
+    background: radial-gradient(ellipse 55% 55% at 50% 50%, var(--visual-glow), transparent 70%);
     z-index: -1; filter: blur(40px); pointer-events: none;
   }
   .visual canvas { width: 100% !important; height: 100% !important; }
@@ -132,6 +220,13 @@
   .corner-flow { display: inline-flex; gap: 6px; align-items: center; opacity: .85; }
   .corner-flow .node { width: 6px; height: 6px; border-radius: 50%; }
   .corner-flow .line { width: 14px; height: 1px; background: var(--border-strong); }
+  .corner-flow a {
+    color: var(--electric-bright);
+    text-decoration: none;
+    border-bottom: 1px dotted var(--underline-soft);
+    transition: color .15s ease, border-color .15s ease;
+  }
+  .corner-flow a:hover { color: var(--electric-glow); border-bottom-color: var(--electric-glow); }
 
   @media (max-width: 800px) {
     .hero { grid-template-columns: 1fr; padding-top: 24px; }
@@ -148,6 +243,15 @@
 <div class="page">
   <header class="topbar">
     <span class="topbar-meta">v0 · pre-launch</span>
+    <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Toggle light and dark theme">
+      <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="4"></circle>
+        <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path>
+      </svg>
+      <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+      </svg>
+    </button>
   </header>
 
   <main class="hero">
@@ -156,8 +260,9 @@
         <span class="pulse"></span>
         <span>Coming soon</span>
       </div>
-      <h1 class="title">OpenTelemetry Maturity, <span class="accent">evaluated.</span></h1>
-      <p class="sub">A public, dimension-by-dimension assessment of how cloud-native projects emit telemetry.</p>
+      <p class="eyebrow"><span class="heart" aria-hidden="true">❤️</span><span>A love letter to the cloud native ecosystem</span></p>
+      <h1 class="title">OpenTelemetry support in cloud native, <span class="accent">elevated.</span></h1>
+      <p class="sub">A public, dimension-by-dimension look at how cloud native projects support OpenTelemetry.</p>
       <div class="foot">
         <span>Built on the <a href="https://github.com/open-telemetry/community/issues/3247" target="_blank" rel="noopener">draft OTel Support Maturity Model</a></span>
       </div>
@@ -172,50 +277,84 @@
     <span class="corner-flow">
       <span class="node" style="background: var(--green)"></span>
       <span class="line"></span>
-      <span class="node" style="background: var(--violet)"></span>
+      <span class="node" style="background: var(--electric-bright)"></span>
       <span class="line"></span>
-      <span class="node" style="background: var(--indigo)"></span>
-      <span style="margin-left: 4px">otlp → batch → exporters</span>
+      <span class="node" style="background: var(--electric-glow)"></span>
+      <span style="margin-left: 4px">evaluate → <a href="https://github.com/dash0hq/agent-skills" target="_blank" rel="noopener">agent skill</a> → upstream</span>
     </span>
     <span>© 2026</span>
   </footer>
 </div>
 
 <script>
-  const ctx = document.getElementById('radar').getContext('2d');
-  new Chart(ctx, {
-    type: 'radar',
-    data: {
-      labels: ['Integration', 'Semantic\nConventions', 'Resource\nAttributes', 'Trace\nModeling', 'Multi-Signal', 'Signal\nQuality', 'Stability'],
-      datasets: [{
-        data: [1, 2, 2, 2, 1, 1, 1],
-        backgroundColor: 'rgba(167, 139, 250, 0.16)',
-        borderColor: '#a78bfa',
-        borderWidth: 2,
-        pointBackgroundColor: '#a78bfa',
-        pointBorderColor: '#a78bfa',
-        pointRadius: 3.5,
-        pointHoverRadius: 5
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      animation: { duration: 1600, easing: 'easeOutQuart' },
-      plugins: { legend: { display: false }, tooltip: { enabled: false } },
-      scales: {
-        r: {
-          min: 0, max: 4,
-          ticks: { display: false, stepSize: 1 },
-          grid: { color: 'rgba(255,255,255,0.07)' },
-          angleLines: { color: 'rgba(255,255,255,0.07)' },
-          pointLabels: {
-            font: { family: 'Inter', size: 12, weight: '500' },
-            color: '#d0d4d9'
+  const radarCanvas = document.getElementById('radar');
+  let radarChart;
+
+  function readVar(name) {
+    return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  }
+
+  function buildRadar(animate) {
+    const ctx = radarCanvas.getContext('2d');
+    if (radarChart) radarChart.destroy();
+    radarChart = new Chart(ctx, {
+      type: 'radar',
+      data: {
+        labels: [
+          ['Integration', 'Surface'],
+          ['Semantic', 'Conventions'],
+          ['Resource', '& Config'],
+          ['Trace', 'Modeling'],
+          ['Multi-Signal'],
+          ['Signal', 'Quality'],
+          ['Stability']
+        ],
+        datasets: [{
+          data: [1, 2, 2, 2, 1, 1, 1],
+          backgroundColor: readVar('--chart-fill'),
+          borderColor: readVar('--chart-line'),
+          borderWidth: 2,
+          pointBackgroundColor: readVar('--chart-point-bg'),
+          pointBorderColor: readVar('--chart-point-border'),
+          pointRadius: 3.5,
+          pointHoverRadius: 5
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: animate ? { duration: 1600, easing: 'easeOutQuart' } : false,
+        plugins: { legend: { display: false }, tooltip: { enabled: false } },
+        scales: {
+          r: {
+            min: 0, max: 3,
+            ticks: { display: false, stepSize: 1 },
+            grid: { color: readVar('--chart-grid') },
+            angleLines: { color: readVar('--chart-grid') },
+            pointLabels: {
+              font: { family: 'Inter', size: 12, weight: '500' },
+              color: readVar('--chart-label')
+            }
           }
         }
       }
-    }
+    });
+  }
+
+  buildRadar(true);
+
+  const toggle = document.getElementById('theme-toggle');
+  toggle.addEventListener('click', () => {
+    const next = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', next);
+    try { localStorage.setItem('theme', next); } catch (e) {}
+    buildRadar(false);
+  });
+
+  window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', (e) => {
+    if (localStorage.getItem('theme')) return;
+    document.documentElement.setAttribute('data-theme', e.matches ? 'light' : 'dark');
+    buildRadar(false);
   });
 </script>
 </body>
