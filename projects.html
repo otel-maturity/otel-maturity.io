@@ -1,129 +1,216 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>OpenTelemetry Maturity Evaluations</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<meta name="description" content="CNCF project evaluations using the OpenTelemetry Support Maturity Model.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Martian+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script>
+  (function() {
+    var theme = 'dark';
+    try {
+      var stored = localStorage.getItem('theme');
+      if (stored === 'light' || stored === 'dark') theme = stored;
+    } catch (e) {}
+    document.documentElement.setAttribute('data-theme', theme);
+  })();
+</script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
-  /* Dark mode (default) */
-  :root, [data-theme="dark"] {
-    --bg: #0a0a0f;
-    --card-bg: #141419;
-    --card-border: #1e1e2a;
-    --card-hover-border: #9078f3;
-    --card-hover-glow: rgba(144, 120, 243, 0.1);
-    --text-primary: #e8e8ec;
-    --text-secondary: #8888a0;
-    --text-muted: #555566;
-    --accent: #9078f3;
-    --red-500: #f8494d;
-    --teal-600: #6ad186;
-    --orange-500: #fd6f40;
-    --gray-400: #bdbdbd;
-    --legend-bg: #101015;
-    --score-0-bg: rgba(192, 57, 43, 0.15);
-    --score-0-fg: #e74c3c;
-    --score-1-bg: rgba(184, 134, 11, 0.15);
-    --score-1-fg: #f0c040;
-    --score-2-bg: rgba(36, 113, 163, 0.15);
-    --score-2-fg: #5dade2;
-    --score-3-bg: rgba(30, 132, 73, 0.15);
-    --score-3-fg: #58d68d;
-    --cat-tag-bg: rgba(85, 85, 102, 0.15);
-    --cat-tag-border: rgba(85, 85, 102, 0.3);
-    --version-bg: rgba(144, 120, 243, 0.1);
-    --version-border: rgba(144, 120, 243, 0.25);
-    --signal-none: #555566;
-    --chart-grid: #2a2a3a;
-    --chart-label: #8888a0;
-  }
+  :root,
+  :root[data-theme="dark"] {
+    --bg-50: #060912;
+    --bg-100: #101622;
+    --bg-150: #19202d;
+    --border: #232c3a;
+    --border-strong: #38445a;
+    --text-intense: #f5f9ff;
+    --text-default: #9aa6b8;
+    --text-subtle: #67738a;
+    --electric: #0ea5e9;
+    --electric-bright: #38bdf8;
+    --electric-glow: #67e8f9;
+    --green: #62d08d;
+    --surface-glass: rgba(29,32,41,.5);
+    --grid-line: rgba(255,255,255,.02);
+    --bg-glow-1: rgba(56,189,248,.14);
+    --bg-glow-2: rgba(14,165,233,.08);
+    --visual-glow: rgba(56,189,248,.24);
+    --chart-grid: rgba(255,255,255,.07);
+    --chart-label: #d0d4d9;
+    --chart-fill: rgba(56, 189, 248, 0.18);
+    --chart-line: #38bdf8;
+    --chart-point-bg: #67e8f9;
+    --chart-point-border: #38bdf8;
+    --underline-soft: rgba(56,189,248,.4);
 
-  /* Light mode */
-  [data-theme="light"] {
-    --bg: #f5f5f8;
-    --card-bg: #ffffff;
-    --card-border: #e0e0e8;
-    --card-hover-border: #9078f3;
-    --card-hover-glow: rgba(144, 120, 243, 0.08);
-    --text-primary: #111111;
-    --text-secondary: #595959;
-    --text-muted: #9e9e9e;
-    --accent: #9078f3;
-    --red-500: #f8494d;
-    --teal-600: #6ad186;
-    --orange-500: #fd6f40;
-    --gray-400: #bdbdbd;
-    --legend-bg: #ffffff;
+    --score-0-bg: rgba(248, 73, 77, 0.12);
+    --score-0-fg: #f87171;
+    --score-1-bg: rgba(240, 192, 64, 0.12);
+    --score-1-fg: #fbbf24;
+    --score-2-bg: rgba(56, 189, 248, 0.12);
+    --score-2-fg: #38bdf8;
+    --score-3-bg: rgba(98, 208, 141, 0.14);
+    --score-3-fg: #62d08d;
+
+    --orange: #fb923c;
+    --signal-none: #4a5568;
+  }
+  :root[data-theme="light"] {
+    --bg-50: #f8fafc;
+    --bg-100: #ffffff;
+    --bg-150: #f1f5f9;
+    --border: #e1e6ed;
+    --border-strong: #adb6c2;
+    --text-intense: #0c1322;
+    --text-default: #4a5568;
+    --text-subtle: #6b7589;
+    --electric: #0284c7;
+    --electric-bright: #0ea5e9;
+    --electric-glow: #0891b2;
+    --green: #16a34a;
+    --surface-glass: rgba(255,255,255,.7);
+    --grid-line: rgba(15,23,42,.04);
+    --bg-glow-1: rgba(56,189,248,.18);
+    --bg-glow-2: rgba(2,132,199,.08);
+    --visual-glow: rgba(14,165,233,.18);
+    --chart-grid: rgba(15,23,42,.08);
+    --chart-label: #475569;
+    --chart-fill: rgba(14,165,233,.16);
+    --chart-line: #0284c7;
+    --chart-point-bg: #06b6d4;
+    --chart-point-border: #0284c7;
+    --underline-soft: rgba(2,132,199,.35);
+
     --score-0-bg: #fff0f0;
     --score-0-fg: #c0392b;
     --score-1-bg: #fef7d6;
     --score-1-fg: #b8860b;
     --score-2-bg: #e8f4fd;
-    --score-2-fg: #2471a3;
+    --score-2-fg: #0284c7;
     --score-3-bg: #e8fbe0;
-    --score-3-fg: #1e8449;
-    --cat-tag-bg: #f0f0f4;
-    --cat-tag-border: #e0e0e8;
-    --version-bg: #f0ecfd;
-    --version-border: #dbd4f8;
-    --signal-none: #bdbdbd;
-    --chart-grid: #e0e0e8;
-    --chart-label: #595959;
+    --score-3-fg: #16a34a;
+
+    --orange: #ea580c;
+    --signal-none: #cbd5e1;
   }
-
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
   body {
-    font-family: 'Roboto', system-ui, sans-serif;
-    color: var(--text-primary);
-    background: var(--bg);
+    font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+    background: var(--bg-50);
+    color: var(--text-intense);
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+    transition: background-color .25s ease, color .25s ease;
     line-height: 1.6;
     -webkit-font-smoothing: antialiased;
   }
+  .bg {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background:
+      radial-gradient(ellipse 50% 60% at 75% 50%, var(--bg-glow-1), transparent 60%),
+      radial-gradient(ellipse 40% 50% at 20% 100%, var(--bg-glow-2), transparent 60%),
+      var(--bg-50);
+  }
+  .grid-overlay {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image:
+      linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+    background-size: 64px 64px;
+    mask-image: radial-gradient(ellipse 90% 80% at 50% 50%, black, transparent 90%);
+  }
 
-  .header {
-    background: linear-gradient(135deg, #f8494d 0%, #9078f3 100%);
-    color: white;
-    padding: 48px 0 40px;
+  .page {
+    position: relative; z-index: 1;
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    padding: 32px clamp(24px, 5vw, 64px);
   }
-  .header h1 {
-    font-size: 32px;
-    font-weight: 700;
-    letter-spacing: -0.5px;
-    margin-bottom: 6px;
+
+  .topbar { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+  .topbar-meta { font-size: 12px; color: var(--text-subtle); font-family: 'JetBrains Mono', monospace; }
+  .topbar-meta a { color: inherit; text-decoration: none; border-bottom: 1px dotted var(--border-strong); transition: color .15s ease, border-color .15s ease; }
+  .topbar-meta a:hover { color: var(--text-default); border-bottom-color: var(--text-default); }
+  .theme-toggle {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px;
+    background: var(--surface-glass);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text-default);
+    cursor: pointer;
+    backdrop-filter: blur(8px);
+    transition: color .15s ease, border-color .15s ease, background-color .15s ease;
+    margin-left: auto;
   }
-  .header .subtitle {
-    font-size: 16px;
-    font-weight: 300;
-    opacity: 0.9;
-    margin-bottom: 16px;
-  }
-  .header .meta {
-    font-size: 13px;
-    opacity: 0.75;
-  }
+  .theme-toggle:hover { color: var(--text-intense); border-color: var(--border-strong); }
+  .theme-toggle svg { width: 16px; height: 16px; display: block; }
+  .theme-toggle .icon-moon { display: none; }
+  :root[data-theme="light"] .theme-toggle .icon-moon { display: block; }
+  :root[data-theme="light"] .theme-toggle .icon-sun { display: none; }
 
   .container {
-    max-width: 1140px;
+    max-width: 1280px;
+    width: 100%;
     margin: 0 auto;
-    padding: 0 24px;
+  }
+
+  .page-header {
+    padding: clamp(40px, 6vw, 72px) 0 clamp(28px, 4vw, 40px);
+  }
+  .pill {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 11px; color: var(--text-default);
+    padding: 6px 12px; border: 1px solid var(--border); border-radius: 999px;
+    margin-bottom: 24px;
+    text-transform: uppercase; letter-spacing: .1em; font-weight: 500;
+    background: var(--surface-glass); backdrop-filter: blur(8px);
+  }
+  .pulse { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: pulse 2.2s ease-in-out infinite; }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(98,208,141,.5); }
+    50% { opacity: .7; box-shadow: 0 0 0 6px rgba(98,208,141,0); }
+  }
+  .title {
+    font-size: clamp(34px, 5vw, 52px);
+    font-weight: 600; letter-spacing: -.025em; line-height: 1.05;
+    color: var(--text-intense); margin: 0 0 18px;
+    max-width: 880px;
+  }
+  .title .accent {
+    background: linear-gradient(135deg, var(--electric), var(--electric-glow));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .sub {
+    font-size: clamp(15px, 1.4vw, 17px);
+    color: var(--text-default); line-height: 1.6;
+    margin: 0 0 8px;
+    max-width: 720px;
+  }
+  .header-meta {
+    margin-top: 12px;
+    font-size: 12px;
+    color: var(--text-subtle);
+    font-family: 'JetBrains Mono', monospace;
   }
 
   .legend-bar {
-    background: var(--legend-bg);
-    border-bottom: 1px solid var(--card-border);
-    padding: 24px 0;
+    padding: 24px 0 32px;
   }
-  .legend-bar .legend-title {
+  .legend-title {
     font-size: 11px;
     font-weight: 600;
-    color: var(--text-muted);
+    color: var(--text-subtle);
     text-transform: uppercase;
-    letter-spacing: 0.8px;
-    margin-bottom: 12px;
+    letter-spacing: .1em;
+    margin-bottom: 14px;
+    font-family: 'JetBrains Mono', monospace;
   }
   .legend-grid {
     display: grid;
@@ -137,10 +224,11 @@
     display: flex;
     align-items: flex-start;
     gap: 10px;
-    padding: 10px 12px;
-    border-radius: 8px;
-    border: 1px solid var(--card-border);
-    background: var(--card-bg);
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--surface-glass);
+    backdrop-filter: blur(8px);
   }
   .legend-score {
     width: 30px;
@@ -152,25 +240,24 @@
     font-size: 14px;
     font-weight: 700;
     flex-shrink: 0;
+    font-family: 'JetBrains Mono', monospace;
   }
-  .legend-text {
-    min-width: 0;
-  }
+  .legend-text { min-width: 0; }
   .legend-level {
     font-size: 13px;
     font-weight: 600;
-    color: var(--text-primary);
+    color: var(--text-intense);
     line-height: 1.3;
   }
   .legend-desc {
     font-size: 11px;
-    color: var(--text-secondary);
+    color: var(--text-default);
     line-height: 1.4;
     margin-top: 2px;
   }
 
   .projects {
-    padding: 32px 0 60px;
+    padding: 8px 0 56px;
   }
 
   .card-grid {
@@ -179,25 +266,25 @@
     gap: 16px;
   }
   @media (min-width: 1000px) {
-    .card-grid {
-      grid-template-columns: 1fr 1fr;
-    }
+    .card-grid { grid-template-columns: 1fr 1fr; }
   }
 
   .project-card {
-    background: var(--card-bg);
-    border: 1px solid var(--card-border);
-    border-radius: 12px;
+    background: var(--surface-glass);
+    border: 1px solid var(--border);
+    border-radius: 14px;
     overflow: hidden;
-    transition: border-color 0.2s, box-shadow 0.2s;
+    transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease;
     cursor: pointer;
     text-decoration: none;
     color: inherit;
     display: block;
+    backdrop-filter: blur(8px);
   }
   .project-card:hover {
-    border-color: var(--card-hover-border);
-    box-shadow: 0 0 24px var(--card-hover-glow);
+    border-color: var(--electric-bright);
+    box-shadow: 0 0 0 1px var(--electric-bright), 0 8px 32px var(--bg-glow-1);
+    transform: translateY(-1px);
   }
 
   .card-inner {
@@ -207,9 +294,7 @@
     padding: 20px;
   }
 
-  .card-content {
-    min-width: 0;
-  }
+  .card-content { min-width: 0; }
 
   .card-top {
     display: flex;
@@ -225,22 +310,25 @@
   }
   .project-name {
     font-size: 17px;
-    font-weight: 700;
-    color: var(--text-primary);
-    letter-spacing: -0.3px;
+    font-weight: 600;
+    color: var(--text-intense);
+    letter-spacing: -.02em;
     white-space: nowrap;
   }
   .project-version {
-    font-family: 'Martian Mono', monospace;
+    font-family: 'JetBrains Mono', monospace;
     font-size: 10px;
-    color: var(--accent);
-    background: var(--version-bg);
-    border: 1px solid var(--version-border);
+    color: var(--electric-bright);
+    background: rgba(56,189,248,.1);
+    border: 1px solid var(--border);
     padding: 1px 6px;
     border-radius: 4px;
     white-space: nowrap;
     margin-left: auto;
     flex-shrink: 0;
+  }
+  :root[data-theme="light"] .project-version {
+    background: rgba(2,132,199,.08);
   }
 
   .card-meta {
@@ -249,24 +337,23 @@
     gap: 8px;
     margin-bottom: 12px;
     font-size: 12px;
-    color: var(--text-secondary);
+    color: var(--text-default);
     line-height: 1.4;
   }
   .category-tag {
     font-size: 9px;
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.6px;
-    color: var(--text-muted);
-    background: var(--cat-tag-bg);
-    border: 1px solid var(--cat-tag-border);
+    letter-spacing: .1em;
+    color: var(--text-subtle);
+    background: var(--bg-150);
+    border: 1px solid var(--border);
     padding: 2px 6px;
-    border-radius: 3px;
+    border-radius: 4px;
     flex-shrink: 0;
+    font-family: 'JetBrains Mono', monospace;
   }
-  .card-meta .sep {
-    color: var(--text-muted);
-  }
+  .card-meta .sep { color: var(--border-strong); }
   .card-desc {
     white-space: nowrap;
     overflow: hidden;
@@ -288,6 +375,7 @@
     font-size: 13px;
     font-weight: 600;
     cursor: default;
+    font-family: 'JetBrains Mono', monospace;
   }
   .score-0 { background: var(--score-0-bg); color: var(--score-0-fg); }
   .score-1 { background: var(--score-1-bg); color: var(--score-1-fg); }
@@ -305,15 +393,15 @@
     align-items: center;
     gap: 4px;
     font-size: 11px;
-    color: var(--text-secondary);
+    color: var(--text-default);
   }
   .signal-dot {
     width: 6px;
     height: 6px;
     border-radius: 50%;
   }
-  .signal-dot.flowing { background: var(--teal-600); }
-  .signal-dot.partial { background: var(--orange-500); }
+  .signal-dot.flowing { background: var(--green); }
+  .signal-dot.partial { background: var(--orange); }
   .signal-dot.none { background: var(--signal-none); }
 
   .view-report {
@@ -321,15 +409,15 @@
     align-items: center;
     gap: 4px;
     font-size: 12px;
-    color: var(--accent);
+    color: var(--electric-bright);
     font-weight: 500;
+    border-bottom: 1px dotted var(--underline-soft);
+    padding-bottom: 1px;
+    width: fit-content;
   }
-  .view-report .arrow {
-    transition: transform 0.2s;
-  }
-  .project-card:hover .view-report .arrow {
-    transform: translateX(3px);
-  }
+  .view-report .arrow { transition: transform .2s ease; }
+  .project-card:hover .view-report { color: var(--electric-glow); border-bottom-color: var(--electric-glow); }
+  .project-card:hover .view-report .arrow { transform: translateX(3px); }
 
   .card-chart {
     display: flex;
@@ -337,304 +425,273 @@
     justify-content: center;
     padding-left: 8px;
   }
-  .mini-chart {
-    width: 130px;
-    height: 130px;
-  }
+  .mini-chart { width: 130px; height: 130px; }
 
-  .footer {
-    padding: 24px 0;
-    text-align: center;
-    font-size: 12px;
-    color: var(--text-muted);
-    border-top: 1px solid var(--card-border);
+  .footer-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 11px; color: var(--text-subtle); font-family: 'JetBrains Mono', monospace;
+    padding-top: 24px; border-top: 1px solid var(--border);
+    flex-wrap: wrap; gap: 12px;
   }
-  .footer a { color: var(--accent); }
-
-  /* Theme toggle */
-  .theme-toggle {
-    position: fixed;
-    top: 16px;
-    right: 16px;
-    z-index: 100;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    border: 1px solid rgba(255,255,255,0.3);
-    background: rgba(0,0,0,0.2);
-    backdrop-filter: blur(8px);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 18px;
-    transition: background 0.2s, border-color 0.2s;
-    color: white;
+  .footer-bar a {
+    color: var(--electric-bright);
+    text-decoration: none;
+    border-bottom: 1px dotted var(--underline-soft);
+    transition: color .15s ease, border-color .15s ease;
   }
-  .theme-toggle:hover {
-    background: rgba(0,0,0,0.4);
-    border-color: rgba(255,255,255,0.5);
-  }
-  [data-theme="light"] .theme-toggle {
-    border-color: rgba(0,0,0,0.15);
-    background: rgba(255,255,255,0.8);
-    color: #111;
-  }
-  [data-theme="light"] .theme-toggle:hover {
-    background: rgba(255,255,255,1);
-  }
-  .theme-toggle .icon-sun { display: none; }
-  .theme-toggle .icon-moon { display: inline; }
-  [data-theme="light"] .theme-toggle .icon-sun { display: inline; }
-  [data-theme="light"] .theme-toggle .icon-moon { display: none; }
-
-  /* Header OTel logo */
-  .header-brand {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    margin-bottom: 6px;
-  }
-  .otel-logo {
-    width: 48px;
-    height: 48px;
-    object-fit: contain;
-  }
+  .footer-bar a:hover { color: var(--electric-glow); border-bottom-color: var(--electric-glow); }
+  .corner-flow { display: inline-flex; gap: 6px; align-items: center; opacity: .85; }
+  .corner-flow .node { width: 6px; height: 6px; border-radius: 50%; }
+  .corner-flow .line { width: 14px; height: 1px; background: var(--border-strong); }
 
   @media (max-width: 600px) {
-    .card-inner {
-      grid-template-columns: 1fr;
-    }
-    .card-chart {
-      padding: 12px 0 0;
-      justify-content: flex-start;
-    }
+    .card-inner { grid-template-columns: 1fr; }
+    .card-chart { padding: 12px 0 0; justify-content: flex-start; }
     .mini-chart { width: 120px; height: 120px; }
+    .footer-bar { flex-direction: column; align-items: flex-start; }
   }
 </style>
 </head>
 <body>
+<div class="bg"></div>
+<div class="grid-overlay"></div>
 
-<button class="theme-toggle" onclick="toggleTheme()" title="Toggle dark/light mode">
-  <span class="icon-moon">&#9790;</span>
-  <span class="icon-sun">&#9788;</span>
-</button>
+<div class="page">
+  <header class="topbar">
+    <span class="topbar-meta"><a href="index.html">otel-maturity.io</a> · evaluations</span>
+    <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Toggle light and dark theme">
+      <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="4"></circle>
+        <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path>
+      </svg>
+      <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+      </svg>
+    </button>
+  </header>
 
-<div class="header">
-  <div class="container">
-    <div class="header-brand">
-      <img class="otel-logo" src="https://raw.githubusercontent.com/cncf/artwork/main/projects/opentelemetry/icon/color/opentelemetry-icon-color.svg" alt="OpenTelemetry">
-      <h1>OpenTelemetry Maturity Evaluations</h1>
+  <section class="page-header">
+    <div class="container">
+      <div class="pill">
+        <span class="pulse"></span>
+        <span>Live evaluations</span>
+      </div>
+      <h1 class="title">OpenTelemetry Maturity <span class="accent">Evaluations.</span></h1>
+      <p class="sub">CNCF project evaluations using the OpenTelemetry Support Maturity Model — dimension-by-dimension, in the open.</p>
+      <!-- UPDATE: adjust project count and date as evaluations are added -->
+      <div class="header-meta" id="header-meta">0 projects evaluated</div>
     </div>
-    <div class="subtitle">CNCF project evaluations using the OpenTelemetry Support Maturity Model</div>
-    <!-- UPDATE: adjust project count and date as evaluations are added -->
-    <div class="meta" id="header-meta">0 projects evaluated</div>
-  </div>
-</div>
+  </section>
 
-<div class="legend-bar">
-  <div class="container">
-    <div class="legend-title">Maturity scale</div>
-    <div class="legend-grid">
-      <div class="legend-card">
-        <div class="legend-score score-0">0</div>
-        <div class="legend-text">
-          <div class="legend-level">Instrumented</div>
-          <div class="legend-desc">Telemetry exists but OpenTelemetry is not a design concern</div>
+  <section class="legend-bar">
+    <div class="container">
+      <div class="legend-title">Maturity scale</div>
+      <div class="legend-grid">
+        <div class="legend-card">
+          <div class="legend-score score-0">0</div>
+          <div class="legend-text">
+            <div class="legend-level">Instrumented</div>
+            <div class="legend-desc">Telemetry exists but OpenTelemetry is not a design concern</div>
+          </div>
+        </div>
+        <div class="legend-card">
+          <div class="legend-score score-1">1</div>
+          <div class="legend-text">
+            <div class="legend-level">OTel-Aligned</div>
+            <div class="legend-desc">OpenTelemetry supported alongside legacy approaches</div>
+          </div>
+        </div>
+        <div class="legend-card">
+          <div class="legend-score score-2">2</div>
+          <div class="legend-text">
+            <div class="legend-level">OTel-Native</div>
+            <div class="legend-desc">OpenTelemetry is the primary integration surface</div>
+          </div>
+        </div>
+        <div class="legend-card">
+          <div class="legend-score score-3">3</div>
+          <div class="legend-text">
+            <div class="legend-level">OTel-Optimized</div>
+            <div class="legend-desc">Telemetry refined based on real-world usage and feedback</div>
+          </div>
         </div>
       </div>
-      <div class="legend-card">
-        <div class="legend-score score-1">1</div>
-        <div class="legend-text">
-          <div class="legend-level">OTel-Aligned</div>
-          <div class="legend-desc">OpenTelemetry supported alongside legacy approaches</div>
-        </div>
-      </div>
-      <div class="legend-card">
-        <div class="legend-score score-2">2</div>
-        <div class="legend-text">
-          <div class="legend-level">OTel-Native</div>
-          <div class="legend-desc">OpenTelemetry is the primary integration surface</div>
-        </div>
-      </div>
-      <div class="legend-card">
-        <div class="legend-score score-3">3</div>
-        <div class="legend-text">
-          <div class="legend-level">OTel-Optimized</div>
-          <div class="legend-desc">Telemetry refined based on real-world usage and feedback</div>
-        </div>
-      </div>
     </div>
-  </div>
-</div>
+  </section>
 
-<div class="projects">
-  <div class="container">
-    <!--
-    ============================================================
-    PROJECT CARDS — add one block per project below.
-    Copy the template from PROJECT-CARD-TEMPLATE.html and fill
-    in the placeholders marked with {{ ... }}.
-    ============================================================
-    -->
-    <div class="card-grid" id="card-grid">
-
-      <!-- ↓↓↓ INSERT PROJECT CARDS HERE ↓↓↓ -->
-
-<!-- Contour -->
-<a class="project-card" href="contour-report.html">
-  <div class="card-inner">
-    <div class="card-content">
-
-      <!-- ── Top row: logo · name · version ── -->
-      <div class="card-top">
-        <img class="project-logo"
-             src="https://raw.githubusercontent.com/cncf/artwork/main/projects/contour/icon/color/contour-icon-color.svg"
-             alt="Contour">
-        <div class="project-name">Contour</div>
-        <span class="project-version">v1.33.4</span>
-      </div>
-
-      <!-- ── Category tag + one-line description ── -->
-      <div class="card-meta">
-        <span class="category-tag">Ingress Controller</span>
-        <span class="sep">&middot;</span>
-        <span class="card-desc">Kubernetes ingress controller using Envoy as the data plane</span>
-      </div>
-
+  <section class="projects">
+    <div class="container">
       <!--
-        ── Score pills ──
-        Order: Integration · Semantics · Resources · Tracing · Multi-Signal · Quality · Stability
+      ============================================================
+      PROJECT CARDS — add one block per project below.
+      Copy the template from PROJECT-CARD-TEMPLATE.html and fill
+      in the placeholders marked with {{ ... }}.
+      ============================================================
       -->
-      <div class="score-pills">
-        <span class="score-pill score-1" title="Integration">1</span>
-        <span class="score-pill score-0" title="Semantics">0</span>
-        <span class="score-pill score-1" title="Resources">1</span>
-        <span class="score-pill score-2" title="Tracing">2</span>
-        <span class="score-pill score-1" title="Multi-Signal">1</span>
-        <span class="score-pill score-1" title="Quality">1</span>
-        <span class="score-pill score-1" title="Stability">1</span>
-      </div>
+      <div class="card-grid" id="card-grid">
 
-      <!--
-        ── Signal pills ──
-        dot class: flowing | partial | none
-      -->
-      <div class="card-signals">
-        <span class="signal-pill"><span class="signal-dot flowing"></span> Traces (OTLP gRPC)</span>
-        <span class="signal-pill"><span class="signal-dot partial"></span> Metrics (Prometheus scrape)</span>
-        <span class="signal-pill"><span class="signal-dot none"></span> Logs (stdout only)</span>
-      </div>
+        <!-- ↓↓↓ INSERT PROJECT CARDS HERE ↓↓↓ -->
 
-      <div class="view-report">View report <span class="arrow">&rarr;</span></div>
+        <!-- Contour -->
+        <a class="project-card" href="contour-report.html">
+          <div class="card-inner">
+            <div class="card-content">
+
+              <!-- ── Top row: logo · name · version ── -->
+              <div class="card-top">
+                <img class="project-logo"
+                    src="https://raw.githubusercontent.com/cncf/artwork/main/projects/contour/icon/color/contour-icon-color.svg"
+                    alt="Contour">
+                <div class="project-name">Contour</div>
+                <span class="project-version">v1.33.4</span>
+              </div>
+
+              <!-- ── Category tag + one-line description ── -->
+              <div class="card-meta">
+                <span class="category-tag">Ingress Controller</span>
+                <span class="sep">&middot;</span>
+                <span class="card-desc">Kubernetes ingress controller using Envoy as the data plane</span>
+              </div>
+
+              <!--
+                ── Score pills ──
+                Order: Integration · Semantics · Resources · Tracing · Multi-Signal · Quality · Stability
+              -->
+              <div class="score-pills">
+                <span class="score-pill score-1" title="Integration">1</span>
+                <span class="score-pill score-0" title="Semantics">0</span>
+                <span class="score-pill score-1" title="Resources">1</span>
+                <span class="score-pill score-2" title="Tracing">2</span>
+                <span class="score-pill score-1" title="Multi-Signal">1</span>
+                <span class="score-pill score-1" title="Quality">1</span>
+                <span class="score-pill score-1" title="Stability">1</span>
+              </div>
+
+              <!--
+                ── Signal pills ──
+                dot class: flowing | partial | none
+              -->
+              <div class="card-signals">
+                <span class="signal-pill"><span class="signal-dot flowing"></span> Traces (OTLP gRPC)</span>
+                <span class="signal-pill"><span class="signal-dot partial"></span> Metrics (Prometheus scrape)</span>
+                <span class="signal-pill"><span class="signal-dot none"></span> Logs (stdout only)</span>
+              </div>
+
+              <div class="view-report">View report <span class="arrow">&rarr;</span></div>
+            </div>
+
+            <!-- ── Radar chart ── -->
+            <div class="card-chart">
+              <div class="mini-chart">
+                <canvas id="chart-contour"></canvas>
+              </div>
+            </div>
+          </div>
+        </a>
+
+        <!--
+          Register chart scores for this card.
+          Score order: Integration, Semantics, Resources, Tracing, Multi-Signal, Quality, Stability
+        -->
+        <script>
+        registerChart('chart-contour', [
+          1,   // Integration
+          0,   // Semantics
+          1,   // Resources
+          2,   // Tracing
+          1,   // Multi-Signal
+          1,   // Quality
+          1    // Stability
+        ]);
+        </script>
+
+        <!-- Emissary-Ingress -->
+        <a class="project-card" href="emissary-report.html">
+          <div class="card-inner">
+            <div class="card-content">
+
+              <!-- ── Top row: logo · name · version ── -->
+              <div class="card-top">
+                <img class="project-logo"
+                    src="https://raw.githubusercontent.com/emissary-ingress/emissary/master/docs/assets/emissary-icon-color.png"
+                    alt="Emissary-Ingress">
+                <div class="project-name">Emissary-Ingress</div>
+                <span class="project-version">v3.12.2</span>
+              </div>
+
+              <!-- ── Category tag + one-line description ── -->
+              <div class="card-meta">
+                <span class="category-tag">CNCF Incubating</span>
+                <span class="sep">&middot;</span>
+                <span class="card-desc">Kubernetes-native API gateway and ingress controller built on Envoy Proxy</span>
+              </div>
+
+              <!--
+                ── Score pills ──
+                Order: Integration · Semantics · Resources · Tracing · Multi-Signal · Quality · Stability
+              -->
+              <div class="score-pills">
+                <span class="score-pill score-1" title="Integration">1</span>
+                <span class="score-pill score-1" title="Semantics">1</span>
+                <span class="score-pill score-1" title="Resources">1</span>
+                <span class="score-pill score-2" title="Tracing">2</span>
+                <span class="score-pill score-1" title="Multi-Signal">1</span>
+                <span class="score-pill score-1" title="Quality">1</span>
+                <span class="score-pill score-1" title="Stability">1</span>
+              </div>
+
+              <!--
+                ── Signal pills ──
+                dot class: flowing | partial | none
+              -->
+              <div class="card-signals">
+                <span class="signal-pill"><span class="signal-dot partial"></span> Traces (Zipkin → OTLP conversion)</span>
+                <span class="signal-pill"><span class="signal-dot partial"></span> Metrics (Prometheus scrape)</span>
+                <span class="signal-pill"><span class="signal-dot none"></span> Logs (stdout only)</span>
+              </div>
+
+              <div class="view-report">View report <span class="arrow">&rarr;</span></div>
+            </div>
+
+            <!-- ── Radar chart ── -->
+            <div class="card-chart">
+              <div class="mini-chart">
+                <canvas id="chart-emissary"></canvas>
+              </div>
+            </div>
+          </div>
+        </a>
+
+        <!--
+          Register chart scores for this card.
+          Score order: Integration, Semantics, Resources, Tracing, Multi-Signal, Quality, Stability
+        -->
+        <script>
+        registerChart('chart-emissary', [
+          1,   // Integration
+          1,   // Semantics
+          1,   // Resources
+          2,   // Tracing
+          1,   // Multi-Signal
+          1,   // Quality
+          1    // Stability
+        ]);
+        </script>
+
     </div>
+  </section>
 
-    <!-- ── Radar chart ── -->
-    <div class="card-chart">
-      <div class="mini-chart">
-        <canvas id="chart-contour"></canvas>
-      </div>
-    </div>
-  </div>
-</a>
-
-<!--
-  Register chart scores for this card.
-  Score order: Integration, Semantics, Resources, Tracing, Multi-Signal, Quality, Stability
--->
-<script>
-registerChart('chart-contour', [
-  1,   // Integration
-  0,   // Semantics
-  1,   // Resources
-  2,   // Tracing
-  1,   // Multi-Signal
-  1,   // Quality
-  1    // Stability
-]);
-</script>
-
-<!-- Emissary-Ingress -->
-<a class="project-card" href="emissary-report.html">
-  <div class="card-inner">
-    <div class="card-content">
-
-      <!-- ── Top row: logo · name · version ── -->
-      <div class="card-top">
-        <img class="project-logo"
-             src="https://raw.githubusercontent.com/emissary-ingress/emissary/master/docs/assets/emissary-icon-color.png"
-             alt="Emissary-Ingress">
-        <div class="project-name">Emissary-Ingress</div>
-        <span class="project-version">v3.12.2</span>
-      </div>
-
-      <!-- ── Category tag + one-line description ── -->
-      <div class="card-meta">
-        <span class="category-tag">CNCF Incubating</span>
-        <span class="sep">&middot;</span>
-        <span class="card-desc">Kubernetes-native API gateway and ingress controller built on Envoy Proxy</span>
-      </div>
-
-      <!--
-        ── Score pills ──
-        Order: Integration · Semantics · Resources · Tracing · Multi-Signal · Quality · Stability
-      -->
-      <div class="score-pills">
-        <span class="score-pill score-1" title="Integration">1</span>
-        <span class="score-pill score-1" title="Semantics">1</span>
-        <span class="score-pill score-1" title="Resources">1</span>
-        <span class="score-pill score-2" title="Tracing">2</span>
-        <span class="score-pill score-1" title="Multi-Signal">1</span>
-        <span class="score-pill score-1" title="Quality">1</span>
-        <span class="score-pill score-1" title="Stability">1</span>
-      </div>
-
-      <!--
-        ── Signal pills ──
-        dot class: flowing | partial | none
-      -->
-      <div class="card-signals">
-        <span class="signal-pill"><span class="signal-dot partial"></span> Traces (Zipkin → OTLP conversion)</span>
-        <span class="signal-pill"><span class="signal-dot partial"></span> Metrics (Prometheus scrape)</span>
-        <span class="signal-pill"><span class="signal-dot none"></span> Logs (stdout only)</span>
-      </div>
-
-      <div class="view-report">View report <span class="arrow">&rarr;</span></div>
-    </div>
-
-    <!-- ── Radar chart ── -->
-    <div class="card-chart">
-      <div class="mini-chart">
-        <canvas id="chart-emissary"></canvas>
-      </div>
-    </div>
-  </div>
-</a>
-
-<!--
-  Register chart scores for this card.
-  Score order: Integration, Semantics, Resources, Tracing, Multi-Signal, Quality, Stability
--->
-<script>
-registerChart('chart-emissary', [
-  1,   // Integration
-  1,   // Semantics
-  1,   // Resources
-  2,   // Tracing
-  1,   // Multi-Signal
-  1,   // Quality
-  1    // Stability
-]);
-</script>
-
-    </div>
-  </div>
-</div>
-
-<div class="footer">
-  <div class="container">
-    Evaluated using the <a href="https://github.com/open-telemetry/community/issues/3247">OpenTelemetry Support Maturity Model</a> (community draft)
-  </div>
+  <footer class="footer-bar">
+    <span class="corner-flow">
+      <span class="node" style="background: var(--green)"></span>
+      <span class="line"></span>
+      <span class="node" style="background: var(--electric-bright)"></span>
+      <span class="line"></span>
+      <span class="node" style="background: var(--electric-glow)"></span>
+      <span style="margin-left: 4px">Evaluated using the <a href="https://github.com/open-telemetry/community/issues/3247" target="_blank" rel="noopener">OTel Support Maturity Model</a> (community draft)</span>
+    </span>
+    <span>© 2026</span>
+  </footer>
 </div>
 
 <script>
@@ -642,17 +699,21 @@ registerChart('chart-emissary', [
 // Theme
 // ---------------------------------------------------------------------------
 function getTheme() {
-  return localStorage.getItem('otel-maturity-theme') || 'dark';
+  try {
+    const stored = localStorage.getItem('theme');
+    if (stored === 'light' || stored === 'dark') return stored;
+  } catch (e) {}
+  return 'dark';
 }
 function applyTheme(theme) {
   document.documentElement.setAttribute('data-theme', theme);
-  localStorage.setItem('otel-maturity-theme', theme);
+  try { localStorage.setItem('theme', theme); } catch (e) {}
   rebuildCharts();
 }
-function toggleTheme() {
-  applyTheme(getTheme() === 'dark' ? 'light' : 'dark');
-}
-document.documentElement.setAttribute('data-theme', getTheme());
+document.getElementById('theme-toggle').addEventListener('click', () => {
+  const next = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+  applyTheme(next);
+});
 
 // ---------------------------------------------------------------------------
 // Chart helpers
@@ -667,30 +728,25 @@ function registerChart(id, scores) {
   chartData[id] = scores;
 }
 
-function getChartColors() {
-  const style = getComputedStyle(document.documentElement);
-  return {
-    grid:        style.getPropertyValue('--chart-grid').trim()  || '#2a2a3a',
-    label:       style.getPropertyValue('--chart-label').trim() || '#8888a0',
-    pointBorder: style.getPropertyValue('--card-bg').trim()     || '#141419'
-  };
+function readVar(name) {
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 }
 
 function makeConfig(scores) {
-  const c = getChartColors();
   return {
     type: 'radar',
     data: {
       labels: ['Integration', 'Semantics', 'Resources', 'Tracing', 'Multi-Signal', 'Quality', 'Stability'],
       datasets: [{
         data: scores,
-        backgroundColor: 'rgba(144, 120, 243, 0.2)',
-        borderColor: '#9078f3',
+        backgroundColor: readVar('--chart-fill'),
+        borderColor: readVar('--chart-line'),
         borderWidth: 2,
-        pointBackgroundColor: '#9078f3',
-        pointBorderColor: c.pointBorder,
+        pointBackgroundColor: readVar('--chart-point-bg'),
+        pointBorderColor: readVar('--chart-point-border'),
         pointBorderWidth: 1.5,
-        pointRadius: 3
+        pointRadius: 3,
+        pointHoverRadius: 4
       }]
     },
     options: {
@@ -700,11 +756,11 @@ function makeConfig(scores) {
         r: {
           min: 0, max: 3,
           ticks: { stepSize: 1, display: false },
-          grid: { color: c.grid, circular: true },
-          angleLines: { color: c.grid },
+          grid: { color: readVar('--chart-grid'), circular: true },
+          angleLines: { color: readVar('--chart-grid') },
           pointLabels: {
-            font: { size: 8, family: 'Roboto', weight: '500' },
-            color: c.label,
+            font: { size: 8, family: 'Inter', weight: '500' },
+            color: readVar('--chart-label'),
             padding: 4
           }
         }
@@ -735,7 +791,6 @@ function updateHeaderMeta() {
     `${count} project${count !== 1 ? 's' : ''} evaluated · ${month} ${year}`;
 }
 
-// Run once DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
   updateHeaderMeta();
   rebuildCharts();
