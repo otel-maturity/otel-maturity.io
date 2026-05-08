@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OpenTelemetry Maturity Evaluations</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Martian+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  /* Dark mode (default) */
+  :root, [data-theme="dark"] {
+    --bg: #0a0a0f;
+    --card-bg: #141419;
+    --card-border: #1e1e2a;
+    --card-hover-border: #9078f3;
+    --card-hover-glow: rgba(144, 120, 243, 0.1);
+    --text-primary: #e8e8ec;
+    --text-secondary: #8888a0;
+    --text-muted: #555566;
+    --accent: #9078f3;
+    --red-500: #f8494d;
+    --teal-600: #6ad186;
+    --orange-500: #fd6f40;
+    --gray-400: #bdbdbd;
+    --legend-bg: #101015;
+    --score-0-bg: rgba(192, 57, 43, 0.15);
+    --score-0-fg: #e74c3c;
+    --score-1-bg: rgba(184, 134, 11, 0.15);
+    --score-1-fg: #f0c040;
+    --score-2-bg: rgba(36, 113, 163, 0.15);
+    --score-2-fg: #5dade2;
+    --score-3-bg: rgba(30, 132, 73, 0.15);
+    --score-3-fg: #58d68d;
+    --cat-tag-bg: rgba(85, 85, 102, 0.15);
+    --cat-tag-border: rgba(85, 85, 102, 0.3);
+    --version-bg: rgba(144, 120, 243, 0.1);
+    --version-border: rgba(144, 120, 243, 0.25);
+    --signal-none: #555566;
+    --chart-grid: #2a2a3a;
+    --chart-label: #8888a0;
+  }
+
+  /* Light mode */
+  [data-theme="light"] {
+    --bg: #f5f5f8;
+    --card-bg: #ffffff;
+    --card-border: #e0e0e8;
+    --card-hover-border: #9078f3;
+    --card-hover-glow: rgba(144, 120, 243, 0.08);
+    --text-primary: #111111;
+    --text-secondary: #595959;
+    --text-muted: #9e9e9e;
+    --accent: #9078f3;
+    --red-500: #f8494d;
+    --teal-600: #6ad186;
+    --orange-500: #fd6f40;
+    --gray-400: #bdbdbd;
+    --legend-bg: #ffffff;
+    --score-0-bg: #fff0f0;
+    --score-0-fg: #c0392b;
+    --score-1-bg: #fef7d6;
+    --score-1-fg: #b8860b;
+    --score-2-bg: #e8f4fd;
+    --score-2-fg: #2471a3;
+    --score-3-bg: #e8fbe0;
+    --score-3-fg: #1e8449;
+    --cat-tag-bg: #f0f0f4;
+    --cat-tag-border: #e0e0e8;
+    --version-bg: #f0ecfd;
+    --version-border: #dbd4f8;
+    --signal-none: #bdbdbd;
+    --chart-grid: #e0e0e8;
+    --chart-label: #595959;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Roboto', system-ui, sans-serif;
+    color: var(--text-primary);
+    background: var(--bg);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .header {
+    background: linear-gradient(135deg, #f8494d 0%, #9078f3 100%);
+    color: white;
+    padding: 48px 0 40px;
+  }
+  .header h1 {
+    font-size: 32px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    margin-bottom: 6px;
+  }
+  .header .subtitle {
+    font-size: 16px;
+    font-weight: 300;
+    opacity: 0.9;
+    margin-bottom: 16px;
+  }
+  .header .meta {
+    font-size: 13px;
+    opacity: 0.75;
+  }
+
+  .container {
+    max-width: 1140px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  .legend-bar {
+    background: var(--legend-bg);
+    border-bottom: 1px solid var(--card-border);
+    padding: 24px 0;
+  }
+  .legend-bar .legend-title {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 12px;
+  }
+  .legend-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+  }
+  @media (max-width: 700px) {
+    .legend-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  .legend-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--card-border);
+    background: var(--card-bg);
+  }
+  .legend-score {
+    width: 30px;
+    height: 26px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .legend-text {
+    min-width: 0;
+  }
+  .legend-level {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+    line-height: 1.3;
+  }
+  .legend-desc {
+    font-size: 11px;
+    color: var(--text-secondary);
+    line-height: 1.4;
+    margin-top: 2px;
+  }
+
+  .projects {
+    padding: 32px 0 60px;
+  }
+
+  .card-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  @media (min-width: 1000px) {
+    .card-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .project-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+    display: block;
+  }
+  .project-card:hover {
+    border-color: var(--card-hover-border);
+    box-shadow: 0 0 24px var(--card-hover-glow);
+  }
+
+  .card-inner {
+    display: grid;
+    grid-template-columns: 1fr 140px;
+    gap: 0;
+    padding: 20px;
+  }
+
+  .card-content {
+    min-width: 0;
+  }
+
+  .card-top {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+  .project-logo {
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+    flex-shrink: 0;
+  }
+  .project-name {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.3px;
+    white-space: nowrap;
+  }
+  .project-version {
+    font-family: 'Martian Mono', monospace;
+    font-size: 10px;
+    color: var(--accent);
+    background: var(--version-bg);
+    border: 1px solid var(--version-border);
+    padding: 1px 6px;
+    border-radius: 4px;
+    white-space: nowrap;
+    margin-left: auto;
+    flex-shrink: 0;
+  }
+
+  .card-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    font-size: 12px;
+    color: var(--text-secondary);
+    line-height: 1.4;
+  }
+  .category-tag {
+    font-size: 9px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--text-muted);
+    background: var(--cat-tag-bg);
+    border: 1px solid var(--cat-tag-border);
+    padding: 2px 6px;
+    border-radius: 3px;
+    flex-shrink: 0;
+  }
+  .card-meta .sep {
+    color: var(--text-muted);
+  }
+  .card-desc {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .score-pills {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 10px;
+  }
+  .score-pill {
+    width: 30px;
+    height: 26px;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: default;
+  }
+  .score-0 { background: var(--score-0-bg); color: var(--score-0-fg); }
+  .score-1 { background: var(--score-1-bg); color: var(--score-1-fg); }
+  .score-2 { background: var(--score-2-bg); color: var(--score-2-fg); }
+  .score-3 { background: var(--score-3-bg); color: var(--score-3-fg); }
+
+  .card-signals {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+  }
+  .signal-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    color: var(--text-secondary);
+  }
+  .signal-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+  }
+  .signal-dot.flowing { background: var(--teal-600); }
+  .signal-dot.partial { background: var(--orange-500); }
+  .signal-dot.none { background: var(--signal-none); }
+
+  .view-report {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    color: var(--accent);
+    font-weight: 500;
+  }
+  .view-report .arrow {
+    transition: transform 0.2s;
+  }
+  .project-card:hover .view-report .arrow {
+    transform: translateX(3px);
+  }
+
+  .card-chart {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-left: 8px;
+  }
+  .mini-chart {
+    width: 130px;
+    height: 130px;
+  }
+
+  .footer {
+    padding: 24px 0;
+    text-align: center;
+    font-size: 12px;
+    color: var(--text-muted);
+    border-top: 1px solid var(--card-border);
+  }
+  .footer a { color: var(--accent); }
+
+  /* Theme toggle */
+  .theme-toggle {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    z-index: 100;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.3);
+    background: rgba(0,0,0,0.2);
+    backdrop-filter: blur(8px);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    transition: background 0.2s, border-color 0.2s;
+    color: white;
+  }
+  .theme-toggle:hover {
+    background: rgba(0,0,0,0.4);
+    border-color: rgba(255,255,255,0.5);
+  }
+  [data-theme="light"] .theme-toggle {
+    border-color: rgba(0,0,0,0.15);
+    background: rgba(255,255,255,0.8);
+    color: #111;
+  }
+  [data-theme="light"] .theme-toggle:hover {
+    background: rgba(255,255,255,1);
+  }
+  .theme-toggle .icon-sun { display: none; }
+  .theme-toggle .icon-moon { display: inline; }
+  [data-theme="light"] .theme-toggle .icon-sun { display: inline; }
+  [data-theme="light"] .theme-toggle .icon-moon { display: none; }
+
+  /* Header OTel logo */
+  .header-brand {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 6px;
+  }
+  .otel-logo {
+    width: 48px;
+    height: 48px;
+    object-fit: contain;
+  }
+
+  @media (max-width: 600px) {
+    .card-inner {
+      grid-template-columns: 1fr;
+    }
+    .card-chart {
+      padding: 12px 0 0;
+      justify-content: flex-start;
+    }
+    .mini-chart { width: 120px; height: 120px; }
+  }
+</style>
+</head>
+<body>
+
+<button class="theme-toggle" onclick="toggleTheme()" title="Toggle dark/light mode">
+  <span class="icon-moon">&#9790;</span>
+  <span class="icon-sun">&#9788;</span>
+</button>
+
+<div class="header">
+  <div class="container">
+    <div class="header-brand">
+      <img class="otel-logo" src="https://raw.githubusercontent.com/cncf/artwork/main/projects/opentelemetry/icon/color/opentelemetry-icon-color.svg" alt="OpenTelemetry">
+      <h1>OpenTelemetry Maturity Evaluations</h1>
+    </div>
+    <div class="subtitle">CNCF project evaluations using the OpenTelemetry Support Maturity Model</div>
+    <!-- UPDATE: adjust project count and date as evaluations are added -->
+    <div class="meta" id="header-meta">0 projects evaluated</div>
+  </div>
+</div>
+
+<div class="legend-bar">
+  <div class="container">
+    <div class="legend-title">Maturity scale</div>
+    <div class="legend-grid">
+      <div class="legend-card">
+        <div class="legend-score score-0">0</div>
+        <div class="legend-text">
+          <div class="legend-level">Instrumented</div>
+          <div class="legend-desc">Telemetry exists but OpenTelemetry is not a design concern</div>
+        </div>
+      </div>
+      <div class="legend-card">
+        <div class="legend-score score-1">1</div>
+        <div class="legend-text">
+          <div class="legend-level">OTel-Aligned</div>
+          <div class="legend-desc">OpenTelemetry supported alongside legacy approaches</div>
+        </div>
+      </div>
+      <div class="legend-card">
+        <div class="legend-score score-2">2</div>
+        <div class="legend-text">
+          <div class="legend-level">OTel-Native</div>
+          <div class="legend-desc">OpenTelemetry is the primary integration surface</div>
+        </div>
+      </div>
+      <div class="legend-card">
+        <div class="legend-score score-3">3</div>
+        <div class="legend-text">
+          <div class="legend-level">OTel-Optimized</div>
+          <div class="legend-desc">Telemetry refined based on real-world usage and feedback</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="projects">
+  <div class="container">
+    <!--
+    ============================================================
+    PROJECT CARDS — add one block per project below.
+    Copy the template from PROJECT-CARD-TEMPLATE.html and fill
+    in the placeholders marked with {{ ... }}.
+    ============================================================
+    -->
+    <div class="card-grid" id="card-grid">
+
+      <!-- ↓↓↓ INSERT PROJECT CARDS HERE ↓↓↓ -->
+
+    </div>
+  </div>
+</div>
+
+<div class="footer">
+  <div class="container">
+    Evaluated using the <a href="https://github.com/open-telemetry/community/issues/3247">OpenTelemetry Support Maturity Model</a> (community draft)
+  </div>
+</div>
+
+<script>
+// ---------------------------------------------------------------------------
+// Theme
+// ---------------------------------------------------------------------------
+function getTheme() {
+  return localStorage.getItem('otel-maturity-theme') || 'dark';
+}
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  localStorage.setItem('otel-maturity-theme', theme);
+  rebuildCharts();
+}
+function toggleTheme() {
+  applyTheme(getTheme() === 'dark' ? 'light' : 'dark');
+}
+document.documentElement.setAttribute('data-theme', getTheme());
+
+// ---------------------------------------------------------------------------
+// Chart helpers
+// ---------------------------------------------------------------------------
+const chartInstances = [];
+
+// chartData is populated automatically when project cards register themselves.
+// Each card calls registerChart('chart-<id>', [s0, s1, s2, s3, s4, s5, s6])
+const chartData = {};
+
+function registerChart(id, scores) {
+  chartData[id] = scores;
+}
+
+function getChartColors() {
+  const style = getComputedStyle(document.documentElement);
+  return {
+    grid:        style.getPropertyValue('--chart-grid').trim()  || '#2a2a3a',
+    label:       style.getPropertyValue('--chart-label').trim() || '#8888a0',
+    pointBorder: style.getPropertyValue('--card-bg').trim()     || '#141419'
+  };
+}
+
+function makeConfig(scores) {
+  const c = getChartColors();
+  return {
+    type: 'radar',
+    data: {
+      labels: ['Integration', 'Semantics', 'Resources', 'Tracing', 'Multi-Signal', 'Quality', 'Stability'],
+      datasets: [{
+        data: scores,
+        backgroundColor: 'rgba(144, 120, 243, 0.2)',
+        borderColor: '#9078f3',
+        borderWidth: 2,
+        pointBackgroundColor: '#9078f3',
+        pointBorderColor: c.pointBorder,
+        pointBorderWidth: 1.5,
+        pointRadius: 3
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      scales: {
+        r: {
+          min: 0, max: 3,
+          ticks: { stepSize: 1, display: false },
+          grid: { color: c.grid, circular: true },
+          angleLines: { color: c.grid },
+          pointLabels: {
+            font: { size: 8, family: 'Roboto', weight: '500' },
+            color: c.label,
+            padding: 4
+          }
+        }
+      },
+      plugins: { legend: { display: false }, tooltip: { enabled: false } }
+    }
+  };
+}
+
+function rebuildCharts() {
+  chartInstances.forEach(c => c.destroy());
+  chartInstances.length = 0;
+  for (const [id, scores] of Object.entries(chartData)) {
+    const el = document.getElementById(id);
+    if (el) chartInstances.push(new Chart(el, makeConfig(scores)));
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Header meta — auto-updates project count from cards in the DOM
+// ---------------------------------------------------------------------------
+function updateHeaderMeta() {
+  const count = document.querySelectorAll('#card-grid .project-card').length;
+  const now = new Date();
+  const month = now.toLocaleString('en-US', { month: 'long' });
+  const year = now.getFullYear();
+  document.getElementById('header-meta').textContent =
+    `${count} project${count !== 1 ? 's' : ''} evaluated · ${month} ${year}`;
+}
+
+// Run once DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+  updateHeaderMeta();
+  rebuildCharts();
+});
+</script>
+
+</body>
+</html>
